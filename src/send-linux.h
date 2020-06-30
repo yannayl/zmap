@@ -11,6 +11,7 @@
 
 #include "../lib/includes.h"
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <netpacket/packet.h>
 
@@ -48,6 +49,12 @@ int send_run_init(sock_t s)
 		sockaddr.sll_protocol = htons(ETHERTYPE_IP);
 	}
 	memcpy(sockaddr.sll_addr, zconf.gw_mac, ETH_ALEN);
+	// Set ZEROCOPY
+	int zc_ok = setsockopt(s.sock, SOL_SOCKET, SOCK_ZEROCOPY, NULL, 0);
+	if (!zc_ok) {
+		log_fatal("send", "unable to enable zero copy");
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
 
