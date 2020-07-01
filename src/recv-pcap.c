@@ -85,23 +85,10 @@ void recv_init()
 	}
 
 	struct bpf_program bpf;
+	bpftmp[0] = 0;
 
-	if (!zconf.send_ip_pkts) {
-		snprintf(bpftmp, sizeof(bpftmp) - 1,
-			 "not ether src %02x:%02x:%02x:%02x:%02x:%02x",
-			 zconf.hw_mac[0], zconf.hw_mac[1], zconf.hw_mac[2],
-			 zconf.hw_mac[3], zconf.hw_mac[4], zconf.hw_mac[5]);
-		assert(strlen(zconf.probe_module->pcap_filter) + 10 <
-		       (BPFLEN - strlen(bpftmp)));
-	} else {
-		bpftmp[0] = 0;
-	}
 	if (zconf.probe_module->pcap_filter) {
-		if (!zconf.send_ip_pkts) {
-			strcat(bpftmp, " and (");
-		} else {
-			strcat(bpftmp, "(");
-		}
+		strcat(bpftmp, " and (");
 		strcat(bpftmp, zconf.probe_module->pcap_filter);
 		strcat(bpftmp, ")");
 	}

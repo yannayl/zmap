@@ -48,7 +48,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 
 	if (!zconf.probe_module->validate_packet(
 		ip_hdr,
-		buflen - (zconf.send_ip_pkts ? 0 : sizeof(struct ether_header)),
+		buflen,
 		&src_ip, validation)) {
 		zrecv.validation_failed++;
 		return;
@@ -64,19 +64,7 @@ void handle_packet(uint32_t buflen, const u_char *bytes)
 
 	fieldset_t *fs = fs_new_fieldset();
 	fs_add_ip_fields(fs, ip_hdr);
-	// HACK:
-	// probe modules expect the full ethernet frame
-	// in process_packet. For VPN, we only get back an IP frame.
-	// Here, we fake an ethernet frame (which is initialized to
-	// have ETH_P_IP proto and 00s for dest/src).
-	if (zconf.send_ip_pkts) {
-		if (buflen > sizeof(fake_eth_hdr)) {
-			buflen = sizeof(fake_eth_hdr);
-		}
-		memcpy(&fake_eth_hdr[sizeof(struct ether_header)],
-		       bytes + zconf.data_link_size, buflen);
-		bytes = fake_eth_hdr;
-	}
+
 	zconf.probe_module->process_packet(bytes, buflen, fs, validation);
 	fs_add_system_fields(fs, is_repeat, zsend.complete);
 	int success_index = zconf.fsconf.success_index;
@@ -142,11 +130,6 @@ int recv_run(pthread_mutex_t *recv_ready_mutex)
 	log_debug("recv", "capturing responses on %s", zconf.iface);
 	if (!zconf.dryrun) {
 		recv_init();
-	}
-	if (zconf.send_ip_pkts) {
-		struct ether_header *eth = (struct ether_header *)fake_eth_hdr;
-		memset(fake_eth_hdr, 0, sizeof(fake_eth_hdr));
-		eth->ether_type = htons(ETHERTYPE_IP);
 	}
 	// initialize paged bitmap
 	seen = pbm_init();

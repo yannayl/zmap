@@ -141,9 +141,8 @@ int get_hw_addr(struct in_addr *gw_ip, char *iface, unsigned char *hw_mac)
 					// could be using a VPN
 					log_fatal(
 					    "get_gateway",
-					    "Unexpected hardware address length (%d)."
-					    " If you are using a VPN, supply the --iplayer flag (and provide an"
-					    " interface via -i)",
+					    "Unexpected hardware address length (%d). Please ensure you are "
+						"using an ethernet device.",
 					    RTA_PAYLOAD(rt_attr));
 				}
 				memcpy(mac, RTA_DATA(rt_attr), IFHWADDRLEN);
@@ -153,9 +152,8 @@ int get_hw_addr(struct in_addr *gw_ip, char *iface, unsigned char *hw_mac)
 					// could be using a VPN
 					log_fatal(
 					    "get_gateway",
-					    "Unexpected IP address length (%d)."
-					    " If you are using a VPN, supply the --iplayer flag"
-					    " (and provide an interface via -i)",
+					    "Unexpected hardware address length (%d). Please ensure you are "
+						"using an ethernet device.",
 					    RTA_PAYLOAD(rt_attr));
 				}
 				memcpy(&dst_ip, RTA_DATA(rt_attr),

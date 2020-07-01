@@ -92,7 +92,6 @@ struct state_conf {
 	int hw_mac_set;
 	in_addr_t source_ip_addresses[256];
 	uint32_t number_source_ips;
-	int send_ip_pkts;
 	char *output_filename;
 	char *blacklist_filename;
 	char *whitelist_filename;
