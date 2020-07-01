@@ -10,6 +10,7 @@
 #define ZMAP_SEND_LINUX_H
 
 #include "../lib/includes.h"
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
@@ -50,8 +51,12 @@ int send_run_init(sock_t s)
 	}
 	memcpy(sockaddr.sll_addr, zconf.gw_mac, ETH_ALEN);
 	// Set ZEROCOPY
-	int zc_ok = setsockopt(s.sock, SOL_SOCKET, SOCK_ZEROCOPY, NULL, 0);
-	if (!zc_ok) {
+
+	int one = 1;
+	int zc_ok = setsockopt(s.sock, SOL_SOCKET, SO_ZEROCOPY, &one, sizeof(one));
+	if (zc_ok != 0) {
+		int zc_err = errno;
+		log_error("send", "%s", strerror(zc_err));
 		log_fatal("send", "unable to enable zero copy");
 		return EXIT_FAILURE;
 	}
